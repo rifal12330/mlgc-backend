@@ -1,42 +1,34 @@
-const { Storage } = require('@google-cloud/storage');
-const uuid = require('uuid');
-
-// Inisialisasi Google Cloud Storage
-const storage = new Storage();
-const bucketName = 'mlgc-bucket-1933'; // Ganti dengan nama bucket Anda
+const { Firestore } = require('@google-cloud/firestore');
+const firestore = new Firestore(); // Inisialisasi Firestore
 
 /**
- * Menyimpan data prediksi ke Google Cloud Storage
+ * Menyimpan data prediksi ke Firestore
  */
 const storeData = async (data) => {
     try {
-        // Generate ID unik untuk file
-        const fileId = uuid.v4();
-        const fileName = `${fileId}.json`; // Nama file untuk hasil prediksi (format JSON)
+        // Generate ID untuk dokumen Firestore (menggunakan UUID)
+        const docId = data.id;
 
-        // Konversi data menjadi string JSON
-        const dataBuffer = Buffer.from(JSON.stringify(data));
+        // Referensi ke koleksi "predictions" dan dokumen dengan ID yang dihasilkan
+        const docRef = firestore.collection('predictions').doc(docId);
 
-        // Tentukan bucket tempat data akan disimpan
-        const bucket = storage.bucket(bucketName);
-        const file = bucket.file(fileName);
-
-        // Upload data ke Cloud Storage
-        await file.save(dataBuffer, {
-            contentType: 'application/json',
-            metadata: { contentDisposition: 'inline' },
+        // Simpan data prediksi ke Firestore
+        await docRef.set({
+            id: data.id,
+            result: data.result,
+            suggestion: data.suggestion,
+            createdAt: data.createdAt,
         });
 
-        console.log(`Data berhasil disimpan dengan ID ${fileId}`);
+        console.log(`Data berhasil disimpan dengan ID ${docId}`);
 
-        // Kembalikan informasi file yang telah disimpan
+        // Kembalikan informasi data yang telah disimpan
         return {
-            fileId,
-            fileName,
-            storageUrl: `gs://${bucketName}/${fileName}`, // URL untuk file yang telah disimpan
+            docId,
+            storageUrl: `https://firestore.googleapis.com/v1/projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents/predictions/${docId}`,
         };
     } catch (error) {
-        console.error('Gagal menyimpan data:', error);
+        console.error('Gagal menyimpan data ke Firestore:', error);
         throw new Error('Gagal menyimpan data prediksi');
     }
 };
