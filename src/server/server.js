@@ -2,7 +2,7 @@ const express = require('express');
 const loadModel = require('./services/loadModel');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 
 (async () => {
     try {
