@@ -1,7 +1,7 @@
 const { predict } = require('../services/inferenceService');
 const { storeData } = require('../services/storeData');
-const ClientError = require('../exceptions/clientError');
-const InputError = require('../exceptions/inputError');
+const ClientError = require('../exceptions/ClientError');
+const InputError = require('../exceptions/InputError');
 const uuid = require('uuid');
 
 const handlePredict = async (req, res) => {

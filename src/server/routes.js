@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { handlePredict } = require('./handler');
-const multerConfig = require('../services/multerConfig'); // Konfigurasi Multer
+const multerConfig = require('../services/multerConfig'); 
 
 const router = express.Router();
 

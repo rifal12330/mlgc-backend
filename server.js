@@ -1,8 +1,15 @@
 const express = require('express');
 const loadModel = require('./src/services/loadModel');
+const predictRoutes = require('./src/server/routes'); // 
 
 const app = express();
 const port = 8080;
+
+// Middleware untuk parsing JSON
+app.use(express.json());
+
+
+app.use(predictRoutes);
 
 (async () => {
     try {
