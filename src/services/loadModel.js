@@ -4,13 +4,27 @@ const path = require('path');
 
 // Inisialisasi Google Cloud Storage
 const storage = new Storage();
-const bucketName = process.env.MODEL_PATH.split('/')[2];
-const modelPathInBucket = process.env.MODEL_PATH.replace(`gs://${bucketName}/`, '');
+
+// Ambil bucket dan path file model dari environment variable MODEL_PATH
+const modelPath = process.env.MODEL_PATH; // Format: gs://<bucket_name>/<model_path>
+if (!modelPath) {
+    throw new Error('MODEL_PATH environment variable is not set');
+}
+
+const bucketName = modelPath.split('/')[2];
+const modelPathInBucket = modelPath.replace(`gs://${bucketName}/`, '');
 const localModelPath = path.join(__dirname, 'model.h5'); // Lokasi sementara di server lokal
 
 const loadModel = async () => {
     try {
-        console.log(`Downloading model from bucket: ${bucketName}`);
+        console.log(`Downloading model from bucket: ${bucketName}, path: ${modelPathInBucket}`);
+
+        // Periksa apakah file sudah ada di lokal
+        if (fs.existsSync(localModelPath)) {
+            console.log('Model already downloaded locally.');
+            return localModelPath;
+        }
+
         // Download model dari GCS ke sistem file lokal
         await storage
             .bucket(bucketName)
