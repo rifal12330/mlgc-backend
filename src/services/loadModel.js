@@ -6,7 +6,7 @@ const path = require('path');
 const storage = new Storage();
 
 // Ambil bucket dan path file model dari environment variable MODEL_PATH
-const modelPath = process.env.MODEL_PATH; // Format: gs://<bucket_name>/<model_path>
+const modelPath = 'https://storage.googleapis.com/mlgc-bucket-1933/submissions-model/model.json'; // Format: gs://<bucket_name>/<model_path>
 if (!modelPath) {
     throw new Error('MODEL_PATH environment variable is not set');
 }

@@ -1,5 +1,5 @@
 const express = require('express');
-const loadModel = require('./services/loadModel');
+const loadModel = require('./src/services/loadModel');
 
 const app = express();
 const port = 8080;
