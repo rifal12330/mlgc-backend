@@ -1,1 +1,43 @@
 node_modules/
+
+# File log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# File environment
+.env
+
+# Cache dependencies dari npm/yarn
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Direktori build dan hasil kompilasi
+dist/
+build/
+tmp/
+temp/
+
+# File coverage dari testing
+coverage/
+.nyc_output/
+
+# Direktori atau file yang dihasilkan oleh editor atau IDE
+.vscode/
+.idea/
+*.iml
+
+# File dari sistem operasi
+.DS_Store
+Thumbs.db
+
+# Log dari ESLint
+eslint-debug.log
+
+# Direktori penyimpanan Git LFS
+.git/lfs/
+
+# File TensorFlow model besar 
+node_modules/@tensorflow/tfjs-node/deps/lib/libtensorflow.*.dylib
