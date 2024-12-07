@@ -1,42 +1,34 @@
-const { Storage } = require('@google-cloud/storage');
 const multer = require('multer');
-const multerStorageCloudStorage = require('multer-storage-cloud-storage');
 const path = require('path');
-require('dotenv').config();
 
-// Inisialisasi Google Cloud Storage
-const storage = new Storage();
+const fileTypes = /jpeg|jpg|png|gif/;
+const checkFileType = (file, cb) => {
+  const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimeType = fileTypes.test(file.mimetype);
 
-// Ambil bucket dari environment variable
-const bucketName = process.env.GCS_BUCKET_NAME; // Pastikan Anda menyetelnya dalam .env
+  if (extname && mimeType) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only image files (jpeg, jpg, png, gif) are allowed!'), false);
+  }
+};
 
-// Membuat konfigurasi multer dengan GCS
-const multerConfig = multer({
-    storage: multerStorageCloudStorage({
-        bucket: bucketName,
-        // Tentukan folder di dalam bucket tempat file disimpan
-        destination: (req, file, cb) => {
-            // Menyimpan file di folder 'images'
-            cb(null, 'images/');
-        },
-        filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const fileName = file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname); // Menambahkan ekstensi file asli
-            cb(null, fileName); // Menggunakan nama file unik
-        }
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 }, // Maksimal ukuran file 5MB
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Hanya file gambar yang diperbolehkan!'), false);
-        }
-    }
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
 });
 
-module.exports = multerConfig;
+const upload = multer({
+  storage: multerStorage,
+  limits: { fileSize: 1000000 }, // 1MB limit
+  fileFilter: (req, file, cb) => {
+    checkFileType(file, cb); // Validate file type
+  }
+});
+
+module.exports = upload;

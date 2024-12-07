@@ -1,24 +1,30 @@
-const { loadModel } = require('./loadModel');
-const { storeData } = require('./storeData');
-const ClientError = require('../exceptions/ClientError');
+const Jimp = require('jimp');
+const tf = require('@tensorflow/tfjs-node');
+const fs = require('fs');
 
-const predict = async (image) => {
+// Fungsi untuk memproses gambar menjadi tensor
+const processImage = async (imagePath) => {
     try {
-        // Load model
-        const model = await loadModel();
+        // Pastikan imagePath adalah path file yang valid
+        if (!fs.existsSync(imagePath)) {
+            throw new Error(`Gambar tidak ditemukan di path: ${imagePath}`);
+        }
 
-        // Lakukan prediksi
-        const prediction = model.predict(image);
-        const result = prediction > 0.5 ? 'Cancer' : 'Non-cancer';
-        const suggestion = result === 'Cancer' ? 'Segera periksa ke dokter!' : 'Penyakit kanker tidak terdeteksi.';
+        // Membaca gambar menggunakan Jimp
+        const image = await Jimp.read(imagePath);
+        image.resize(224, 224); // Ubah ukuran gambar sesuai model (224x224 umumnya untuk model ImageNet)
 
-        // Simpan hasil prediksi (opsional)
-        await storeData({ result, suggestion });
+        // Mengonversi gambar yang sudah di-resize menjadi buffer
+        const buffer = await image.getBufferAsync(Jimp.MIME_JPEG); // Dapatkan buffer gambar dengan format JPEG
+        const imageTensor = tf.node.decodeImage(buffer); // Decode buffer menjadi tensor
 
-        return { result, suggestion };
+        // Mengembalikan tensor dengan dimensi batch (untuk prediksi di TensorFlow)
+        return imageTensor.expandDims(0); // Menambahkan dimensi batch (1, 224, 224, 3) untuk prediksi
     } catch (error) {
-        throw new ClientError('Error saat melakukan prediksi');
+        // Menangani kesalahan dengan logging yang jelas
+        console.error('Error processing image:', error.message);
+        throw new Error('Gagal memproses gambar. Pastikan file gambar valid dan dapat diakses.');
     }
 };
 
-module.exports = { predict };
+module.exports = { processImage };

@@ -1,35 +1,14 @@
-const { Firestore } = require('@google-cloud/firestore');
-const firestore = new Firestore(); // Inisialisasi Firestore
+const admin = require('firebase-admin');
+admin.initializeApp();
 
-/**
- * Menyimpan data prediksi ke Firestore
- */
-const storeData = async (data) => {
+const storeData = async (predictionData) => {
     try {
-        // Generate ID untuk dokumen Firestore (menggunakan UUID)
-        const docId = data.id;
-
-        // Referensi ke koleksi "predictions" dan dokumen dengan ID yang dihasilkan
-        const docRef = firestore.collection('predictions').doc(docId);
-
-        // Simpan data prediksi ke Firestore
-        await docRef.set({
-            id: data.id,
-            result: data.result,
-            suggestion: data.suggestion,
-            createdAt: data.createdAt,
-        });
-
-        console.log(`Data berhasil disimpan dengan ID ${docId}`);
-
-        // Kembalikan informasi data yang telah disimpan
-        return {
-            docId,
-            storageUrl: `https://firestore.googleapis.com/v1/projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents/predictions/${docId}`,
-        };
+        const firestore = admin.firestore();
+        const docRef = await firestore.collection('predictions').add(predictionData);
+        return { docId: docRef.id }; // Mengembalikan ID dokumen yang disimpan
     } catch (error) {
-        console.error('Gagal menyimpan data ke Firestore:', error);
-        throw new Error('Gagal menyimpan data prediksi');
+        console.error('Gagal menyimpan data:', error);
+        throw new Error('Failed to store data');
     }
 };
 
